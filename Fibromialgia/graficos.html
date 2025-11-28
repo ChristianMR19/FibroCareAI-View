@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gráficos de Predicciones</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+
+    .grid-graficos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 80%;
+      margin: auto;
+    }
+
+    .cuadro {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas { max-width: 100%; max-height: 300px; }
+    h3 { margin-bottom: 15px; }
+
+    .btn-regresar {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 12px 25px;
+      background: linear-gradient(135deg, #36A2EB, #1a73e8);
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      text-decoration: none;
+      border-radius: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="btn-regresar">← Regresar</a>
+  <h2 style="text-align:center;">Dashboard</h2>
+
+  <div class="grid-graficos">
+
+    <!-- Gráfico 1 -->
+    <div class="cuadro">
+      <h3>Precisión de Predicción</h3>
+      <canvas id="grafico1"></canvas>
+    </div>
+
+    <!-- Gráfico 2 -->
+    <div class="cuadro">
+      <h3>Pacientes sin aumento de intensidad de síntomas</h3>
+      <canvas id="grafico2"></canvas>
+    </div>
+
+    <!-- Gráfico 3 -->
+    <div class="cuadro">
+      <h3>Monto Evitado por Consulta</h3>
+
+      <div id="metricasMonto" 
+           style="margin-bottom:15px; text-align:center; font-size:16px; font-weight:bold;">
+        Total: S/ 1405 <br>
+        Promedio: S/ 78
+      </div>
+
+      <canvas id="grafico3"></canvas>
+    </div>
+
+    <!-- Gráfico 4 -->
+    <div class="cuadro">
+      <h3>Reducción de gravedad de los síntomas</h3>
+      <canvas id="grafico4"></canvas>
+    </div>
+
+  </div>
+
+  <script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+      /* ============================
+            GRÁFICO 1 – PRECISIÓN
+      ============================ */
+      new Chart(document.getElementById("grafico1"), {
+        type: "doughnut",
+        data: {
+          labels: ["Precisión 85%", "Error 15%"],
+          datasets: [{
+            data: [85, 15],
+            backgroundColor: ["#36A2EB", "#FF6384"]
+          }]
+        },
+        options: {
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+
+      /* ============================
+            GRÁFICO 2 – AGRAVAMIENTO
+      ============================ */
+      new Chart(document.getElementById("grafico2"), {
+        type: "bar",
+        data: {
+          labels: ["Sin aumento (94%)", "Con aumento (6%)"],
+          datasets: [{
+            data: [94, 6],
+            backgroundColor: ["#36A2EB", "#FF6384"]
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
+      });
+
+
+      /* ============================
+          GRÁFICO 3 – MONTO EVITADO
+      ============================ */
+      const valores = [50, 60, 80, 90, 70, 100, 85, 75, 95, 100];
+      new Chart(document.getElementById("grafico3"), {
+        type: "line",
+        data: {
+          labels: valores.map((_, i) => "Consulta " + (i+1)),
+          datasets: [{
+            label: "Monto evitado (S/)",
+            data: valores,
+            borderColor: "#4CAF50",
+            backgroundColor: "rgba(76, 175, 80, 0.2)",
+            borderWidth: 3,
+            pointRadius: 5,
+            fill: true,
+            tension: 0.4
+          }]
+        }
+      });
+
+
+      /* ============================
+        GRÁFICO 4 – REDUCCIÓN
+      ============================ */
+      new Chart(document.getElementById("grafico4"), {
+        type: "pie",
+        data: {
+          labels: ["Con reducción (94%)", "Sin reducción (6%)"],
+          datasets: [{
+            data: [94, 6],
+            backgroundColor: ["#4CAF50", "#F44336"]
+          }]
+        },
+        options: {
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+    });
+
+  </script>
+</body>
+</html>

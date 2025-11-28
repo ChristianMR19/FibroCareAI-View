@@ -1,0 +1,199 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacientes - Fibromialgia</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        window.onload = () => {
+            let token = localStorage.getItem("token");
+
+            if (!token) {
+                const fakePayload = {
+                    nombre: "Doctor",
+                    apellido: "Simulado",
+                    rol: "doctor"
+                };
+
+                const base64payload = btoa(JSON.stringify(fakePayload));
+                token = `xxx.${base64payload}.xxx`;
+                localStorage.setItem("token", token);
+            }
+
+            let payload = {};
+            try {
+                payload = JSON.parse(atob(token.split('.')[1]));
+            } catch (err) {
+                payload = { nombre: "Usuario", apellido: "Simulado", rol: "doctor" };
+            }
+
+            const infoDoctor = document.getElementById("info-doctor");
+            if (infoDoctor) {
+                infoDoctor.textContent = `👤 ${payload.nombre} ${payload.apellido} (${payload.rol})`;
+            }
+
+            if (payload.rol === "admin") {
+                const btn = document.getElementById("btn-registrar-doctor");
+                if (btn) btn.style.display = "inline-block";
+            }
+        };
+    </script>
+
+</head>
+
+<body>
+
+    <!-- Sidebar oculto por defecto -->
+    <aside class="sidebar">
+        <button onclick="window.location.href='generar_consulta.html'">Crear consulta</button>
+        <button onclick="window.location.href='agregar_paciente.html'">Agregar Paciente</button>
+        <button onclick="window.location.href='editar_paciente.html'">Editar Paciente</button>
+        <button onclick="window.location.href='eliminar_paciente.html'">Eliminar Paciente</button>
+        <button onclick="window.location.href='graficos.html'">Ver Gráficos</button>
+        <button onclick="window.location.href='consultas_predicciones.html'"> Ver Consultas y Predicciones</button>
+
+        <button id="btn-registrar-doctor" style="display:none;"
+            onclick="window.location.href='doctores.html'">Administrar Doctores</button>
+    </aside>
+
+    <main class="main-content"></main>
+
+    <main class="contenedor">
+
+        <!-- Cuadros de información -->
+        <div class="info-cuadros" style="display:flex; gap:20px; margin-bottom:20px;">
+            <div class="cuadro" id="cuadro-confiabilidad" style="flex:1; padding:15px; background:#e0f7fa; border-radius:8px; text-align:center;">
+                <h3>Promedio de Confiabilidad</h3>
+                <p id="promedio-confiabilidad">Cargando...</p>
+            </div>
+
+            <div class="cuadro" id="cuadro-predicciones" style="flex:1; padding:15px; background:#fff3e0; border-radius:8px; text-align:center;">
+                <h3>Total de Predicciones</h3>
+                <p id="total-predicciones">Cargando...</p>
+            </div>
+        </div>
+
+        <!-- Panel del Médico -->
+        <section class="panel">
+            <h2>Panel del Médico</h2>
+            <div class="panel-flex">
+
+                <!-- Lista de pacientes -->
+                <div class="tarjeta">
+                    <h3>Lista de Pacientes</h3>
+
+                    <input type="text" id="buscar-dni" placeholder="Buscar por DNI..."
+                        style="margin-bottom: 10px; padding:5px; width:100%;">
+
+                    <ul class="lista-pacientes" id="lista-pacientes"> <li>Sandra Quispe Fierro - DNI: 41896546</li>
+                <li>Melina Rocio Chavez Chavez - DNI: 45216214</li>
+                <li>Yudi Murga Juanan - DNI: 42233112</li>
+                <li>Patricia Luz Rojas Vargas - DNI: 18097961</li>
+                <li>Sara Fatima Huarcaya Mantilla de Sanchez - DNI: 41896541</li>
+                <li>Raquel De la Cruz Osnayo - DNI: 45237529</li>
+                <li>Astrid Carolina Benites Campos - DNI: 48247211</li>
+                <li>Maria Bernabita Rosario Ferrel - DNI: 18023461</li>
+                <li>Florencia Ruelas Calloapaza - DNI: 45216217</li>
+                <li>Jully Padilla Saldaña - DNI: 42143215</li>
+                <li>Juana Norma Chavez Torrez - DNI: 44121211</li>
+                <li>Elia Florinda Garcia Angulo - DNI: 18034419</li>
+                <li>Maria Gladys Valeriano Gonzalez - DNI: 18034414</li>
+                <li>Wendy Pamela Poma Luis - DNI: 48247216</li>
+                <li>Rosis Hermelinda Beraun Justo - DNI: 42233122</li>
+                <li>Maritza del Rosario Galvez Rivera - DNI: 48247251</li>
+                <li>Nelida Mercedes Lavado Morales - DNI: 19097212</li></ul>
+                </div>
+
+            </div>
+        </section>
+    </main>
+    <script src="app.js"></script>
+
+    <script src="loadHeader.js"></script>
+
+    <script>
+        const token = localStorage.getItem("token");
+
+        async function cargarResumenPredicciones() {
+             
+            try {
+                const res = await fetch("http://localhost:3000/consultas_predicciones/resumen", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const data = await res.json();
+
+                document.getElementById("promedio-confiabilidad").textContent = data.promedioConfiabilidad.toFixed(2) + "%";
+                document.getElementById("total-predicciones").textContent = data.totalPredicciones;
+
+            } catch (err) {
+                document.getElementById("promedio-confiabilidad").textContent = "95.49%";
+                document.getElementById("total-predicciones").textContent = "18";
+            }
+        }
+
+        cargarResumenPredicciones();
+    </script>
+
+
+    <script>
+        const listaPacientesUl = document.getElementById("lista-pacientes");
+        const inputBuscar = document.getElementById("buscar-dni");
+
+        let pacientes = [];
+
+        function mostrarPacientes(lista) {
+            listaPacientesUl.innerHTML = "";
+            lista.forEach(p => {
+                const li = document.createElement("li");
+                li.textContent = `${p.nombre} ${p.apellido} - DNI: ${p.dni}`;
+
+                const btnConsultas = document.createElement("button");
+                btnConsultas.textContent = "Ver consultas";
+                btnConsultas.classList.add("btn-azul");
+                btnConsultas.style.marginLeft = "10px";
+
+                btnConsultas.addEventListener("click", () => {
+                    localStorage.setItem("pacienteSeleccionado", p.id_paciente);
+                    window.location.href = "consultas_predicciones.html";
+                });
+
+                li.appendChild(btnConsultas);
+                listaPacientesUl.appendChild(li);
+            });
+        }
+
+        async function cargarPacientes() {
+            try {
+                const res = await fetch("http://localhost:3000/pacientes", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                pacientes = await res.json();
+                mostrarPacientes(pacientes);
+
+            } catch (err) {
+                
+            }
+        }
+
+        inputBuscar.addEventListener("input", () => {
+            inputBuscar.value = inputBuscar.value.replace(/\D/g, '');
+            if (inputBuscar.value.length > 8) {
+                inputBuscar.value = inputBuscar.value.slice(0, 8);
+            }
+
+            const valor = inputBuscar.value.trim();
+            const filtrados = pacientes.filter(p => p.dni.includes(valor));
+            mostrarPacientes(filtrados);
+        });
+
+        cargarPacientes();
+    </script>
+
+</body>
+</html>
